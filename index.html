@@ -3,111 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catalogue Artistes</title>
-    
+    <title>Mon Musée Digital</title>
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    
     <style>
-        body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
+        :root { --primary: #6366f1; --accent: #ec4899; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
         
-        /* Contrôles */
-        .controls { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .filter-group { margin-bottom: 15px; }
-        .filter-btn { padding: 8px 16px; margin: 4px; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; background: #fff; }
-        .filter-btn.active { background: #333; color: #fff; border-color: #333; }
+        /* Home Screen */
+        #home-view { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 600px; margin: 50px auto; }
+        .nav-btn { padding: 30px; border-radius: 20px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; transition: transform 0.2s; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .btn-theme { background: linear-gradient(135deg, #6366f1, #a855f7); }
+        .btn-tech { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+        .btn-artist { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-courant { background: linear-gradient(135deg, #10b981, #059669); }
+
+        /* App View */
+        #app-view { display: none; }
+        .controls { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .filter-btn { padding: 8px 15px; margin: 4px; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; background: white; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         
-        /* Grille */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 250px; object-fit: cover; background: #eee; }
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
         .card-body { padding: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <div id="filter-themes" class="filter-group"><strong>Thèmes :</strong> </div>
-        <div id="filter-techniques" class="filter-group"><strong>Techniques :</strong> </div>
+    <div id="home-view">
+        <button class="nav-btn btn-theme" onclick="showApp('theme')">Thèmes</button>
+        <button class="nav-btn btn-tech" onclick="showApp('tech')">Techniques</button>
+        <button class="nav-btn btn-artist" onclick="showApp('artist')">Artistes</button>
+        <button class="nav-btn btn-courant" onclick="showApp('courant')">Courants</button>
     </div>
 
-    <div id="results" class="grid"></div>
+    <div id="app-view">
+        <button onclick="location.reload()" style="margin-bottom: 15px;">← Retour Accueil</button>
+        <div class="controls" id="filter-container">
+            <h3 id="current-title"></h3>
+            <div id="filters"></div>
+        </div>
+        <div id="results" class="grid"></div>
+    </div>
 
     <script src="data.js"></script>
     <script>
-        const resultsDiv = document.getElementById('results');
+        let currentMode = '';
 
-        // Récupérer image depuis Wikipédia API
-        async function getWikiImage(wikiTitle) {
-            try {
-                const url = `https://fr.wikipedia.org/w/api.php?action=query&titles=${wikiTitle}&prop=pageimages&format=json&pithumbsize=300&origin=*`;
-                const response = await fetch(url);
-                const data = await response.json();
-                const pages = data.query.pages;
-                const pageId = Object.keys(pages)[0];
-                return pages[pageId].thumbnail ? pages[pageId].thumbnail.source : 'https://via.placeholder.com/300?text=Image+indisponible';
-            } catch(e) { return 'https://via.placeholder.com/300?text=Image+indisponible'; }
-        }
-
-        async function initFilters() {
-            const themes = new Set();
-            const techs = new Set();
+        function getTopItems(key, limit = 10) {
+            const counts = {};
             DATA_SOURCE.artistes.forEach(a => {
-                a.themes.forEach(t => themes.add(t));
-                a.techniques.forEach(t => techs.add(t));
+                const items = Array.isArray(a[key]) ? a[key] : [a[key]];
+                items.forEach(item => counts[item] = (counts[item] || 0) + 1);
             });
-
-            createButtons('filter-themes', themes, 'theme');
-            createButtons('filter-techniques', techs, 'tech');
-            render(); // Rendu initial
+            return Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, limit).map(x => x[0]);
         }
 
-        function createButtons(containerId, set, type) {
-            const container = document.getElementById(containerId);
-            Array.from(set).sort().forEach(val => {
+        function showApp(mode) {
+            currentMode = mode;
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('app-view').style.display = 'block';
+            document.getElementById('current-title').textContent = 'Filtrer par ' + mode;
+            
+            const filtersDiv = document.getElementById('filters');
+            filtersDiv.innerHTML = '';
+            
+            const items = (mode === 'artist') ? DATA_SOURCE.artistes.map(a => a.nom) : getTopItems(mode === 'tech' ? 'techniques' : mode + 's');
+            
+            items.forEach(item => {
                 const btn = document.createElement('button');
-                btn.textContent = val;
-                btn.className = 'filter-btn ' + type;
-                btn.onclick = () => {
-                    btn.classList.toggle('active');
-                    render();
-                };
-                container.appendChild(btn);
+                btn.className = 'filter-btn';
+                btn.textContent = item;
+                btn.onclick = () => { btn.classList.toggle('active'); render(); };
+                filtersDiv.appendChild(btn);
             });
+            render();
         }
 
         async function render() {
-            const activeThemes = Array.from(document.querySelectorAll('.filter-btn.theme.active')).map(b => b.textContent);
-            const activeTechs = Array.from(document.querySelectorAll('.filter-btn.tech.active')).map(b => b.textContent);
-
-            const filtered = DATA_SOURCE.artistes.filter(a => {
-                const matchTheme = activeThemes.length === 0 || a.themes.some(t => activeThemes.includes(t));
-                const matchTech = activeTechs.length === 0 || a.techniques.some(t => activeTechs.includes(t));
-                return matchTheme && matchTech;
+            const active = Array.from(document.querySelectorAll('.filter-btn.active')).map(b => b.textContent);
+            const filtered = active.length === 0 ? DATA_SOURCE.artistes : DATA_SOURCE.artistes.filter(a => {
+                const vals = (currentMode === 'artist') ? [a.nom] : (currentMode === 'tech' ? a.techniques : a[currentMode + 's']);
+                return vals.some(v => active.includes(v));
             });
 
-            // Génération des cartes
+            const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
+            
             for (let a of filtered) {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `
-                    <img id="img-${a.id}" src="" alt="${a.nom}">
-                    <div class="card-body">
-                        <h3>${a.nom}</h3>
-                        <p>${a.dates}</p>
-                        <p><strong>${a.oeuvre_phare}</strong></p>
-                    </div>
-                `;
+                card.innerHTML = `<img id="img-${a.id}" src=""> <div class="card-body"><h3>${a.nom}</h3><p>${a.oeuvre_phare}</p></div>`;
                 resultsDiv.appendChild(card);
-                // Charger l'image en arrière-plan
-                getWikiImage(a.image_wikipedia).then(src => {
-                    document.getElementById(`img-${a.id}`).src = src;
+                
+                fetch(`https://fr.wikipedia.org/w/api.php?action=query&titles=${a.image_wikipedia}&prop=pageimages&format=json&pithumbsize=300&origin=*`)
+                .then(r => r.json()).then(data => {
+                    const page = Object.values(data.query.pages)[0];
+                    if(page.thumbnail) document.getElementById(`img-${a.id}`).src = page.thumbnail.source;
                 });
             }
         }
-
-        initFilters();
     </script>
 </body>
 </html>
