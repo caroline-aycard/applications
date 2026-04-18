@@ -3,96 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Artistes</title>
-    
+    <title>Explorateur d'Artistes</title>
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333; }
-        h1 { text-align: center; }
-        .controls { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card h3 { margin: 0 0 10px 0; color: #000; }
-        .card p { margin: 5px 0; font-size: 0.9em; color: #666; }
-        .card .bio { font-size: 0.85em; margin-top: 10px; font-style: italic; }
+        body { font-family: sans-serif; background: #eee; padding: 20px; }
+        .filter-section { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; }
+        .filter-group { margin-bottom: 10px; }
+        .filter-btn { padding: 8px 15px; margin: 3px; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; background: white; }
+        .filter-btn.active { background: #007bff; color: white; border-color: #007bff; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 250px; object-fit: cover; }
+        .card-content { padding: 15px; }
+        .card h3 { margin: 0 0 10px; font-size: 1.1em; }
     </style>
 </head>
 <body>
 
-    <h1>Catalogue des Artistes</h1>
-    
-    <div class="controls">
-        <input type="text" id="search" placeholder="Rechercher un nom...">
-        <select id="filter-theme"><option value="">Tous les thèmes</option></select>
-        <select id="filter-technique"><option value="">Toutes les techniques</option></select>
-        <select id="filter-courant"><option value="">Tous les courants</option></select>
+    <h1>Mon Catalogue Artistes</h1>
+
+    <div class="filter-section">
+        <div id="filter-themes" class="filter-group"><strong>Thèmes :</strong></div>
+        <div id="filter-techniques" class="filter-group"><strong>Techniques :</strong></div>
     </div>
 
     <div id="results" class="grid"></div>
 
-    <script src="data.js"></script> 
-    
+    <script src="data.js"></script>
     <script>
         const resultsDiv = document.getElementById('results');
-        const searchInput = document.getElementById('search');
         
-        // Extraction unique des catégories pour les filtres
+        // Initialisation : Création des boutons
         function initFilters() {
             const themes = new Set();
             const techs = new Set();
-            const courants = new Set();
-
             DATA_SOURCE.artistes.forEach(a => {
                 a.themes.forEach(t => themes.add(t));
                 a.techniques.forEach(t => techs.add(t));
-                a.courants.forEach(c => courants.add(c));
             });
 
-            populateSelect('filter-theme', themes);
-            populateSelect('filter-technique', techs);
-            populateSelect('filter-courant', courants);
+            createButtons('filter-themes', themes, 'theme');
+            createButtons('filter-techniques', techs, 'tech');
         }
 
-        function populateSelect(id, set) {
-            const select = document.getElementById(id);
+        function createButtons(containerId, set, type) {
+            const container = document.getElementById(containerId);
             Array.from(set).sort().forEach(val => {
-                const opt = document.createElement('option');
-                opt.value = val; opt.textContent = val;
-                select.appendChild(opt);
+                const btn = document.createElement('button');
+                btn.textContent = val;
+                btn.className = 'filter-btn ' + type;
+                btn.onclick = () => {
+                    btn.classList.toggle('active');
+                    render();
+                };
+                container.appendChild(btn);
             });
         }
 
-        // Moteur de rendu et filtrage
         function render() {
-            const search = searchInput.value.toLowerCase();
-            const theme = document.getElementById('filter-theme').value;
-            const tech = document.getElementById('filter-technique').value;
-            const courant = document.getElementById('filter-courant').value;
+            const activeThemes = Array.from(document.querySelectorAll('.filter-btn.theme.active')).map(b => b.textContent);
+            const activeTechs = Array.from(document.querySelectorAll('.filter-btn.tech.active')).map(b => b.textContent);
 
             const filtered = DATA_SOURCE.artistes.filter(a => {
-                return (a.nom.toLowerCase().includes(search)) &&
-                       (theme === "" || a.themes.includes(theme)) &&
-                       (tech === "" || a.techniques.includes(tech)) &&
-                       (courant === "" || a.courants.includes(courant));
+                const matchTheme = activeThemes.length === 0 || a.themes.some(t => activeThemes.includes(t));
+                const matchTech = activeTechs.length === 0 || a.techniques.some(t => activeTechs.includes(t));
+                return matchTheme && matchTech;
             });
 
             resultsDiv.innerHTML = filtered.map(a => `
                 <div class="card">
-                    <h3>${a.nom}</h3>
-                    <p><strong>Dates:</strong> ${a.dates}</p>
-                    <p><strong>Oeuvre:</strong> ${a.oeuvre_phare}</p>
-                    <p><strong>Courant:</strong> ${a.courants.join(', ')}</p>
-                    <div class="bio">${a.bio.substring(0, 120)}...</div>
+                    <img src="images/${a.id}.jpg" alt="${a.nom}" onerror="this.style.display='none'">
+                    <div class="card-content">
+                        <h3>${a.nom}</h3>
+                        <p><small>${a.dates}</small></p>
+                    </div>
                 </div>
             `).join('');
         }
 
-        document.querySelectorAll('select, input').forEach(el => el.addEventListener('input', render));
-        
-        // Lancer l'app
         initFilters();
         render();
     </script>
