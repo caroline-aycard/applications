@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ARTS RÉF — 103 Artistes</title>
+    <title>ARTS RÉF</title>
 </head>
 <body>
     <div id="main-grid"></div>
@@ -11,7 +11,6 @@
 
     <script>
         const grid = document.getElementById('main-grid');
-        // On vérifie que DATA_SOURCE est bien chargé
         if (typeof DATA_SOURCE !== 'undefined') {
             DATA_SOURCE.artistes.forEach(art => {
                 grid.innerHTML += `<div><h3>${art.nom}</h3></div>`;
