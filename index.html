@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>ARTS RÉF — 103 Artistes</title>
+</head>
+<body>
+    <div id="main-grid"></div>
+
+    <script src="data.js"></script>
+
+    <script>
+        const grid = document.getElementById('main-grid');
+        // On vérifie que DATA_SOURCE est bien chargé
+        if (typeof DATA_SOURCE !== 'undefined') {
+            DATA_SOURCE.artistes.forEach(art => {
+                grid.innerHTML += `<div><h3>${art.nom}</h3></div>`;
+            });
+        }
+    </script>
+</body>
+</html>
