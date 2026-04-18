@@ -1,12 +1,23 @@
-<script>
-    const grid = document.getElementById('main-grid');
-    
-    // Si DATA_SOURCE est un tableau simple, on retire ".artistes"
-    if (typeof DATA_SOURCE !== 'undefined') {
-        DATA_SOURCE.forEach(art => { // <-- J'ai retiré ".artistes" ici
-            grid.innerHTML += `<div><h3>${art.nom}</h3></div>`;
-        });
-    } else {
-        console.error("DATA_SOURCE n'est pas chargé ! Vérifiez le fichier data.js");
-    }
-</script>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>ARTS RÉF — 103 Artistes</title>
+</head>
+<body>
+    <h1>Liste des artistes</h1>
+    <div id="main-grid"></div>
+
+    <script src="data.js"></script>
+    <script>
+        const grid = document.getElementById('main-grid');
+        if (typeof DATA_SOURCE !== 'undefined') {
+            DATA_SOURCE.artistes.forEach(art => {
+                grid.innerHTML += '<div><h3>' + art.nom + '</h3></div>';
+            });
+        } else {
+            grid.innerHTML = "Erreur : data.js n'est pas chargé.";
+        }
+    </script>
+</body>
+</html>
