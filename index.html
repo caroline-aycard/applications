@@ -7,135 +7,136 @@
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <style>
-        :root { --p: #6366f1; --a: #ec4899; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; margin: 0; padding: 20px; }
+        :root { --c1: #ff6b6b; --c2: #4ecdc4; --c3: #ffe66d; --c4: #1a535c; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; margin: 0; padding: 20px; }
         
-        /* Navigation globale */
-        #header { display: none; padding: 10px 0; margin-bottom: 20px; }
-        .back-btn { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { background: #333; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: none; }
+        
+        #home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 500px; margin: 50px auto; }
+        .nav-card { height: 120px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; border: none; }
+        
+        #app-area { display: none; }
+        .filter-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .btn-filter { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+        .btn-filter.active { background: var(--c4); color: white; border-color: var(--c4); }
+        .btn-reset { padding: 8px 16px; border-radius: 20px; border: none; background: #eee; cursor: pointer; font-weight: bold; }
 
-        /* Vues */
-        #home-view { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 600px; margin: 50px auto; }
-        .nav-btn { padding: 40px 20px; border-radius: 25px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 1.2em; transition: 0.3s; }
+        .artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .artist-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
+        .artist-card:hover { transform: translateY(-5px); }
+        .artist-card img { width: 100%; height: 180px; object-fit: cover; }
         
-        /* Styles des blocs */
-        .btn-theme { background: linear-gradient(135deg, #6366f1, #a855f7); }
-        .btn-tech { background: linear-gradient(135deg, #ec4899, #f43f5e); }
-        .btn-artist { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .btn-courant { background: linear-gradient(135deg, #10b981, #059669); }
-
-        /* Filtres et Grid */
-        #list-view { display: none; }
-        .filter-btn { padding: 8px 16px; margin: 4px; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; background: white; }
-        .filter-btn.active { background: var(--p); color: white; border-color: var(--p); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card { background: white; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 200px; object-fit: cover; border-radius: 15px 15px 0 0; }
-        
-        /* Vue Détail */
-        #detail-view { display: none; max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; }
-        .action-links { display: flex; gap: 10px; margin-top: 20px; }
-        .action-btn { padding: 12px 20px; border-radius: 8px; text-decoration: none; color: white; font-weight: bold; }
+        #detail-view { display: none; padding: 20px; max-width: 600px; margin: auto; }
+        .links-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .link-btn { padding: 15px; border-radius: 10px; text-decoration: none; color: white; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header id="header">
-        <button class="back-btn" onclick="showHome()">← Accueil</button>
-    </header>
-
     <div id="home-view">
-        <button class="nav-btn btn-theme" onclick="showList('theme')">Thèmes</button>
-        <button class="nav-btn btn-tech" onclick="showList('tech')">Techniques</button>
-        <button class="nav-btn btn-artist" onclick="showList('artist')">Artistes</button>
-        <button class="nav-btn btn-courant" onclick="showList('courant')">Courants</button>
+        <h1 style="text-align:center">Bienvenue au Musée</h1>
+        <div id="home-grid">
+            <button class="nav-card" style="background:var(--c1)" onclick="enterApp('theme')">Thèmes</button>
+            <button class="nav-card" style="background:var(--c2)" onclick="enterApp('tech')">Techniques</button>
+            <button class="nav-card" style="background:var(--c3); color:black" onclick="enterApp('artist')">Artistes</button>
+            <button class="nav-card" style="background:var(--c4)" onclick="enterApp('courant')">Courants</button>
+        </div>
     </div>
 
-    <div id="list-view">
-        <div id="filters"></div>
-        <div id="results" class="grid"></div>
+    <div id="app-area">
+        <div class="header">
+            <button class="back-btn" onclick="location.reload()">← Accueil</button>
+        </div>
+        <div class="filter-container" id="filter-bar"></div>
+        <div class="artist-grid" id="results"></div>
     </div>
 
     <div id="detail-view">
+        <button class="back-btn" onclick="hideDetail()">← Retour liste</button>
         <h2 id="det-nom"></h2>
         <p id="det-bio"></p>
-        <div class="action-links">
-            <a id="link-wiki" target="_blank" class="action-btn" style="background:#3b82f6">Voir Wikipedia</a>
-            <a id="link-img-art" target="_blank" class="action-btn" style="background:#8b5cf6">Google Images (Artiste)</a>
-            <a id="link-img-theme" target="_blank" class="action-btn" style="background:#ec4899">Google Images (Thème)</a>
+        <div class="links-group">
+            <a id="wiki-link" class="link-btn" style="background:var(--c4)" target="_blank">Wikipedia</a>
+            <a id="img-link" class="link-btn" style="background:var(--c1)" target="_blank">Google Images</a>
         </div>
     </div>
 
     <script src="data.js"></script>
     <script>
-        let currentMode = '';
+        let mode = '';
+        let activeFilters = [];
 
-        function showHome() {
-            document.getElementById('header').style.display = 'none';
-            document.getElementById('home-view').style.display = 'grid';
-            document.getElementById('list-view').style.display = 'none';
-            document.getElementById('detail-view').style.display = 'none';
-        }
-
-        function showList(mode) {
-            currentMode = mode;
-            document.getElementById('header').style.display = 'block';
+        function enterApp(m) {
+            mode = m;
             document.getElementById('home-view').style.display = 'none';
-            document.getElementById('list-view').style.display = 'block';
-            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('app-area').style.display = 'block';
             
-            const filtersDiv = document.getElementById('filters');
-            filtersDiv.innerHTML = '';
+            const bar = document.getElementById('filter-bar');
+            bar.innerHTML = '<button class="btn-reset" onclick="resetFilters()">Tout effacer</button>';
             
-            // Logique de limitation (top 10)
-            const items = (mode === 'artist') ? DATA_SOURCE.artistes.map(a => a.nom) : 
-                          Object.keys(DATA_SOURCE.artistes.reduce((acc, a) => {
-                              (a[mode+'s'] || []).forEach(v => acc[v] = (acc[v]||0)+1);
-                              return acc;
-                          }, {})).sort().slice(0,10);
+            const keys = (mode === 'artist') ? DATA_SOURCE.artistes.map(a => a.nom) : 
+                         [...new Set(DATA_SOURCE.artistes.flatMap(a => a[mode === 'tech' ? 'techniques' : mode + 's']))].sort().slice(0,12);
             
-            items.forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                btn.textContent = item;
-                btn.onclick = () => { btn.classList.toggle('active'); renderList(); };
-                filtersDiv.appendChild(btn);
+            keys.forEach(k => {
+                const b = document.createElement('button');
+                b.className = 'btn-filter'; b.textContent = k;
+                b.onclick = () => { b.classList.toggle('active'); updateFilters(); };
+                bar.appendChild(b);
             });
-            renderList();
+            renderGrid();
         }
 
-        function renderList() {
-            const active = Array.from(document.querySelectorAll('.filter-btn.active')).map(b => b.textContent);
-            const filtered = active.length === 0 ? DATA_SOURCE.artistes : DATA_SOURCE.artistes.filter(a => {
-                const vals = (currentMode === 'artist') ? [a.nom] : (a[currentMode+'s'] || []);
-                return vals.some(v => active.includes(v));
-            });
+        function resetFilters() {
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            updateFilters();
+        }
 
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
+        function updateFilters() {
+            activeFilters = Array.from(document.querySelectorAll('.btn-filter.active')).map(b => b.textContent);
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            // Tri Chronologique : extraction année de naissance avec parseInt
+            const filtered = (activeFilters.length === 0 ? DATA_SOURCE.artistes : DATA_SOURCE.artistes.filter(a => {
+                const vals = (mode === 'artist') ? [a.nom] : (a[mode === 'tech' ? 'techniques' : mode + 's'] || []);
+                return vals.some(v => activeFilters.includes(v));
+            })).sort((a,b) => parseInt(a.dates) - parseInt(b.dates));
+
             filtered.forEach(a => {
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `<img id="img-${a.id}" src="https://via.placeholder.com/200?text=Chargement..." onclick="showDetail('${a.id}')">
-                                 <div class="card-body"><h3>${a.nom}</h3></div>`;
-                resultsDiv.appendChild(card);
-                fetch(`https://fr.wikipedia.org/w/api.php?action=query&titles=${a.image_wikipedia}&prop=pageimages&format=json&pithumbsize=300&origin=*`)
-                .then(r => r.json()).then(d => {
-                    const page = Object.values(d.query.pages)[0];
-                    if(page.thumbnail) document.getElementById(`img-${a.id}`).src = page.thumbnail.source;
+                card.className = 'artist-card';
+                card.onclick = () => showDetail(a);
+                card.innerHTML = `<img id="img-${a.id}" src="https://via.placeholder.com/200?text=Chargement">
+                                  <div style="padding:10px"><strong>${a.nom}</strong></div>`;
+                container.appendChild(card);
+                fetch(`https://fr.wikipedia.org/w/api.php?action=query&titles=${a.image_wikipedia}&prop=pageimages&format=json&pithumbsize=200&origin=*`)
+                .then(r=>r.json()).then(d=>{
+                    const p = Object.values(d.query.pages)[0];
+                    if(p.thumbnail) document.getElementById(`img-${a.id}`).src = p.thumbnail.source;
                 });
             });
         }
 
-        function showDetail(id) {
-            const a = DATA_SOURCE.artistes.find(x => x.id === id);
-            document.getElementById('list-view').style.display = 'none';
+        function showDetail(a) {
+            document.getElementById('app-area').style.display = 'none';
             document.getElementById('detail-view').style.display = 'block';
             document.getElementById('det-nom').textContent = a.nom;
             document.getElementById('det-bio').textContent = a.bio;
-            document.getElementById('link-wiki').href = `https://fr.wikipedia.org/wiki/${a.image_wikipedia}`;
-            document.getElementById('link-img-art').href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(a.nom)}`;
-            document.getElementById('link-img-theme').href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(a.themes[0])}`;
+            document.getElementById('wiki-link').href = `https://fr.wikipedia.org/wiki/${a.image_wikipedia}`;
+            
+            // Recherche Google Images Contextuelle
+            const query = activeFilters.length > 0 ? `${a.nom} ${activeFilters[0]}` : `${a.nom} oeuvre`;
+            document.getElementById('img-link').href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+        }
+
+        function hideDetail() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('app-area').style.display = 'block';
         }
     </script>
 </body>
