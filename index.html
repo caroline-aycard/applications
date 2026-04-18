@@ -2,22 +2,99 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ARTS RÉF — 103 Artistes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Artistes</title>
+    
+    <link rel="icon" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333; }
+        h1 { text-align: center; }
+        .controls { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card h3 { margin: 0 0 10px 0; color: #000; }
+        .card p { margin: 5px 0; font-size: 0.9em; color: #666; }
+        .card .bio { font-size: 0.85em; margin-top: 10px; font-style: italic; }
+    </style>
 </head>
 <body>
-    <h1>Liste des artistes</h1>
-    <div id="main-grid"></div>
 
-    <script src="data.js"></script>
+    <h1>Catalogue des Artistes</h1>
+    
+    <div class="controls">
+        <input type="text" id="search" placeholder="Rechercher un nom...">
+        <select id="filter-theme"><option value="">Tous les thèmes</option></select>
+        <select id="filter-technique"><option value="">Toutes les techniques</option></select>
+        <select id="filter-courant"><option value="">Tous les courants</option></select>
+    </div>
+
+    <div id="results" class="grid"></div>
+
+    <script src="data.js"></script> 
+    
     <script>
-        const grid = document.getElementById('main-grid');
-        if (typeof DATA_SOURCE !== 'undefined') {
-            DATA_SOURCE.artistes.forEach(art => {
-                grid.innerHTML += '<div><h3>' + art.nom + '</h3></div>';
+        const resultsDiv = document.getElementById('results');
+        const searchInput = document.getElementById('search');
+        
+        // Extraction unique des catégories pour les filtres
+        function initFilters() {
+            const themes = new Set();
+            const techs = new Set();
+            const courants = new Set();
+
+            DATA_SOURCE.artistes.forEach(a => {
+                a.themes.forEach(t => themes.add(t));
+                a.techniques.forEach(t => techs.add(t));
+                a.courants.forEach(c => courants.add(c));
             });
-        } else {
-            grid.innerHTML = "Erreur : data.js n'est pas chargé.";
+
+            populateSelect('filter-theme', themes);
+            populateSelect('filter-technique', techs);
+            populateSelect('filter-courant', courants);
         }
+
+        function populateSelect(id, set) {
+            const select = document.getElementById(id);
+            Array.from(set).sort().forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val; opt.textContent = val;
+                select.appendChild(opt);
+            });
+        }
+
+        // Moteur de rendu et filtrage
+        function render() {
+            const search = searchInput.value.toLowerCase();
+            const theme = document.getElementById('filter-theme').value;
+            const tech = document.getElementById('filter-technique').value;
+            const courant = document.getElementById('filter-courant').value;
+
+            const filtered = DATA_SOURCE.artistes.filter(a => {
+                return (a.nom.toLowerCase().includes(search)) &&
+                       (theme === "" || a.themes.includes(theme)) &&
+                       (tech === "" || a.techniques.includes(tech)) &&
+                       (courant === "" || a.courants.includes(courant));
+            });
+
+            resultsDiv.innerHTML = filtered.map(a => `
+                <div class="card">
+                    <h3>${a.nom}</h3>
+                    <p><strong>Dates:</strong> ${a.dates}</p>
+                    <p><strong>Oeuvre:</strong> ${a.oeuvre_phare}</p>
+                    <p><strong>Courant:</strong> ${a.courants.join(', ')}</p>
+                    <div class="bio">${a.bio.substring(0, 120)}...</div>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('select, input').forEach(el => el.addEventListener('input', render));
+        
+        // Lancer l'app
+        initFilters();
+        render();
     </script>
 </body>
 </html>
